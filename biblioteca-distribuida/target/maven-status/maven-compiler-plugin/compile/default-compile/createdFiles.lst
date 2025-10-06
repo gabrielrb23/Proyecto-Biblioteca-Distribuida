@@ -1,0 +1,7 @@
+edu\javeriana\biblioteca\App.class
+edu\javeriana\biblioteca\common\AppConfig.class
+edu\javeriana\biblioteca\processes\RenewalActor.class
+edu\javeriana\biblioteca\processes\ReturnActor.class
+edu\javeriana\biblioteca\messaging\Message.class
+edu\javeriana\biblioteca\processes\LoadManager.class
+edu\javeriana\biblioteca\processes\SolicitingProcess.class

@@ -11,9 +11,10 @@ import java.util.List;
 public class SolicitingProcess {
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
-			System.err.println("Uso: java ... SolicitingProcess <archivo_workload.csv>");
+			System.err.println("Uso: java ... SolicitingProcess <archivo_workload.txt>");
 			System.exit(1);
 		}
+
 		String rep = AppConfig.get("gc.rep", "tcp://127.0.0.1:5555");
 		Path path = Paths.get(args[0]);
 		List<String> lines = Files.readAllLines(path);
@@ -24,22 +25,27 @@ public class SolicitingProcess {
 			System.out.printf("[PS] Conectado a GC REP: %s%n", rep);
 
 			for (String line : lines) {
-				String[] p = line.split(",");
-				if (p.length < 3)
+
+				line = line.trim();
+				if (line.isEmpty() || line.startsWith("#"))
 					continue;
+
+				String[] p = line.split(",", 2);
 				String op = p[0].trim().toUpperCase();
-				String book = p[1].trim();
+				String bookId = p[1].trim();
 				Message msg = switch (op) {
-					case "DEVOLVER" -> Message.devolver(book);
-					case "RENOVAR" -> Message.renovar(book);
+					case "D" -> Message.devolver(bookId);
+					case "R" -> Message.renovar(bookId);
 					default -> null;
 				};
-				if (msg == null)
+				if (msg == null) {
+					System.out.printf("[PS] Línea ignorada (op desconocida): %s%n", line);
 					continue;
+				}
 
 				req.send(msg.serialize());
 				String ack = req.recvStr();
-				System.out.printf("[PS] %s %s %s -> %s%n", op, book, ack);
+				System.out.printf("[PS] %s %s -> %s%n", op, bookId, ack);
 				Thread.sleep(20);
 			}
 		}
