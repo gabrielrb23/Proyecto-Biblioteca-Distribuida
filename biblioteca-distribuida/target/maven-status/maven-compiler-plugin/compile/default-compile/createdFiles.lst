@@ -1,4 +1,3 @@
-edu\javeriana\biblioteca\App.class
 edu\javeriana\biblioteca\common\AppConfig.class
 edu\javeriana\biblioteca\processes\RenewalActor.class
 edu\javeriana\biblioteca\processes\ReturnActor.class

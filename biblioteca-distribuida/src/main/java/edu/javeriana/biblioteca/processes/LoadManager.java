@@ -16,14 +16,14 @@ public class LoadManager {
 
       rep.bind(repBind);
       pub.bind(pubBind);
-      System.out.printf("[GC] REP %s, PUB %s%n", repBind, pubBind);
+      System.out.printf("[GC] Conectado a [PS]: %s y [GA]: %s%n", repBind, pubBind);
 
       while (true) {
         String req = rep.recvStr();
         Message msg = Message.parse(req);
-        System.out.printf("[GC] Recibido PS: %s %s%n", msg.type(), msg.bookCode());
+        System.out.printf("[PS]->[GC]: %s %s%n", msg.type(), msg.bookCode());
 
-        rep.send("ACK");
+        rep.send("Se ha aceptado su solicitud de " + msg.type() + " para el libro " + msg.bookCode());
 
         String topic = msg.type();
         pub.sendMore(topic);
