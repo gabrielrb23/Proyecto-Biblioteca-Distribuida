@@ -7,10 +7,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-/**
- * Router simple que maneja una BD primaria y una secundaria.
- * Internamente expone DataSource "casero" basado en DriverManager.
- */
 public class DataSourceRouter {
 
 	private final DataSource primary;

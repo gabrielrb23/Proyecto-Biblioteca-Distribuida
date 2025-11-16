@@ -25,7 +25,7 @@ public class SolicitingProcess {
 		try (ZMQ.Context ctx = ZMQ.context(1);
 				ZMQ.Socket req = ctx.socket(SocketType.REQ)) {
 			req.connect(rep);
-			System.out.printf("[PS] Conectado a [GC]: %s%n", rep);
+			System.out.printf("[PS] se conecto a [GC]: %s%n", rep);
 
 			for (String line : lines) {
 
@@ -55,7 +55,7 @@ public class SolicitingProcess {
 				// Enviar la solicitud
 				req.send(msg.serialize());
 				String ack = req.recvStr();
-				System.out.printf("[GC]->[PS]: %s%n", ack);
+				System.out.printf("[GC] -> [PS]: %s%n", ack);
 				Thread.sleep(20);
 			}
 		}

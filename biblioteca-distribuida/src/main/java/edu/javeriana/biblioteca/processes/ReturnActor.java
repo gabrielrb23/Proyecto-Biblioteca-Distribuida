@@ -22,16 +22,20 @@ public class ReturnActor {
 
       sub.connect(subConnect); // Se suscribe al topico de devoluciones
       sub.subscribe("DEVOLUCION".getBytes(ZMQ.CHARSET));
-      System.out.printf("[ReturnActor] se suscribio a [GA]: %s (topic DEVOLUCION)%n", subConnect);
+      System.out.print("[ReturnActor] se suscribio al topic DEVOLUCION%n");
 
       gaReq.connect(gaConnect);
       System.out.printf("[ReturnActor] se conecto a [GA]: %s%n", gaConnect);
 
+      System.out.println();
+      System.out.println();
+
       while (true) {
         // Se recibe la devolucion
-        String topic = sub.recvStr();
         String payload = sub.recvStr();
         Message msg = Message.parse(payload);
+        System.out.printf("[GC] -> [ReturnActor] -> [GA]: %s %s %s %s%n",
+            msg.type(), msg.branchId(), msg.userId(), msg.bookCode());
 
         // Construir comando de almacenamiento
         StorageCommand cmd = new StorageCommand(
@@ -43,8 +47,9 @@ public class ReturnActor {
 
         String rawRes = gaReq.recvStr();
         StorageResult res = StorageResult.parse(rawRes);
-        System.out.printf("[ReturnActor] BD -> %s (%s)%n",
+        System.out.printf("[GA] -> [ReturnActor]: %s (%s)%n",
             res.ok() ? "OK" : "ERROR", res.message());
+        System.out.println();
       }
     }
   }

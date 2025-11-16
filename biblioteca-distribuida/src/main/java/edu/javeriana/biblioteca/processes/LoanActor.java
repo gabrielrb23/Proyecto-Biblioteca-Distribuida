@@ -21,16 +21,19 @@ public class LoanActor {
 
 			// Escuchar solicitudes de préstamo desde GC
 			gcRep.bind(repConnect);
-			System.out.printf("[LoanActor] REP para GC en %s%n", repConnect);
+			System.out.printf("[LoanActor] se conecto a [GC]: %s%n", repConnect);
 
 			// Conectarse al Gestor de Almacenamiento (GA)
 			gaReq.connect(gaConnect);
-			System.out.printf("[LoanActor] REQ hacia GA en %s%n", gaConnect);
+			System.out.printf("[LoanActor] se conecto a [GA]: %s%n", gaConnect);
+
+			System.out.println();
+			System.out.println();
 
 			while (true) {
 				String rawCmd = gcRep.recvStr();
 				StorageCommand cmd = StorageCommand.parse(rawCmd);
-				System.out.printf("[LoanActor] Recibido desde GC: %s %s %s %s%n",
+				System.out.printf("[GC] -> [LoanActor] -> [GA]: %s %s %s %s%n",
 						cmd.type(), cmd.branchId(), cmd.userId(), cmd.bookCode());
 
 				StorageResult result;
@@ -38,9 +41,9 @@ public class LoanActor {
 
 				String rawRes = gaReq.recvStr();
 				result = StorageResult.parse(rawRes);
-				System.out.printf("[LoanActor] Respuesta de GA: %s (%s)%n",
+				System.out.printf("[GA] -> [LoanActor]: %s (%s)%n",
 						result.ok() ? "OK" : "ERR", result.message());
-
+				System.out.println();
 				gcRep.send(result.serialize());
 			}
 		}

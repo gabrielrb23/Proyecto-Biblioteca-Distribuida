@@ -140,7 +140,7 @@ public class StorageGateway {
 
 					// Crear préstamo
 					LocalDate start = LocalDate.now();
-					LocalDate due = start.plusDays(14);
+					LocalDate due = start.plusDays(7);
 
 					psLoan.setString(1, userId);
 					psLoan.setString(2, bookCode);

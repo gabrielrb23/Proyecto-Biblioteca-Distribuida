@@ -15,6 +15,10 @@ public class Replicator {
 	}
 
 	public void replicateIncrementAvailable(String branchId, String bookCode) {
+		if (!router.isPrimaryUp()) {
+			return;
+		}
+
 		exec.submit(() -> {
 			try (Connection c = router.secondary().getConnection();
 					PreparedStatement ps = c.prepareStatement(
@@ -24,9 +28,7 @@ public class Replicator {
 
 				ps.setString(1, branchId);
 				ps.setString(2, bookCode);
-				int rows = ps.executeUpdate();
-				System.out.printf("[Replicator] +available en secundaria %s/%s (filas=%d)%n",
-						branchId, bookCode, rows);
+				ps.executeUpdate();
 			} catch (Exception e) {
 				System.err.println("[Replicator] Error replicando inventario: " + e.getMessage());
 			}
@@ -34,6 +36,10 @@ public class Replicator {
 	}
 
 	public void replicateRenewLoan(String branchId, String userId, String bookCode) {
+		if (!router.isPrimaryUp()) {
+			return;
+		}
+
 		exec.submit(() -> {
 			try (Connection c = router.secondary().getConnection();
 					PreparedStatement ps = c.prepareStatement(
@@ -46,9 +52,7 @@ public class Replicator {
 				ps.setString(1, userId);
 				ps.setString(2, bookCode);
 				ps.setString(3, branchId);
-				int rows = ps.executeUpdate();
-				System.out.printf("[Replicator] renovación replicada en secundaria %s/%s/%s (filas=%d)%n",
-						branchId, userId, bookCode, rows);
+				ps.executeUpdate();
 			} catch (Exception e) {
 				System.err.println("[Replicator] Error replicando renovación: " + e.getMessage());
 			}
@@ -56,6 +60,10 @@ public class Replicator {
 	}
 
 	public void replicateNewLoan(String branchId, String userId, String bookCode) {
+		if (!router.isPrimaryUp()) {
+			return;
+		}
+
 		exec.submit(() -> {
 			try (Connection c = router.secondary().getConnection();
 					PreparedStatement psInv = c.prepareStatement(
@@ -70,21 +78,18 @@ public class Replicator {
 
 				psInv.setString(1, branchId);
 				psInv.setString(2, bookCode);
-				int invRows = psInv.executeUpdate();
+				psInv.executeUpdate();
 
 				LocalDate startDate = LocalDate.now();
-				LocalDate dueDate = startDate.plusDays(14);
+				LocalDate dueDate = startDate.plusDays(7);
 
 				psLoan.setString(1, userId);
 				psLoan.setString(2, bookCode);
 				psLoan.setString(3, branchId);
 				psLoan.setDate(4, Date.valueOf(startDate));
 				psLoan.setDate(5, Date.valueOf(dueDate));
-				int loanRows = psLoan.executeUpdate();
+				psLoan.executeUpdate();
 
-				System.out.printf(
-						"[Replicator] préstamo replicado en secundaria %s/%s/%s (inv=%d, loans=%d)%n",
-						branchId, userId, bookCode, invRows, loanRows);
 			} catch (Exception e) {
 				System.err.println("[Replicator] Error replicando préstamo nuevo: " + e.getMessage());
 			}

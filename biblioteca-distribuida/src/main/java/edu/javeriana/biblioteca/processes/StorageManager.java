@@ -39,26 +39,29 @@ public class StorageManager {
 				ZMQ.Socket rep = ctx.socket(SocketType.REP)) {
 
 			rep.bind(bind);
-			System.out.printf("[GA] StorageManager REP en %s%n", bind);
+			System.out.print("[GA] Esperando comandos%n");
 
 			while (true) {
 				String raw = rep.recvStr();
 				StorageCommand cmd = StorageCommand.parse(raw);
-				System.out.printf("[GA] Recibido comando: %s %s %s %s%n",
-						cmd.type(), cmd.branchId(), cmd.userId(), cmd.bookCode());
-
 				StorageResult result;
 				try {
 					switch (cmd.type()) {
 						case "DEVOLUCION" -> {
+							System.out.printf("[ReturnActor] -> [GA]: %s %s %s%n", cmd.branchId(), cmd.userId(),
+									cmd.bookCode());
 							gateway.applyReturn(cmd.branchId(), cmd.userId(), cmd.bookCode());
 							result = new StorageResult(true, "Devolución aplicada");
 						}
 						case "RENOVACION" -> {
+							System.out.printf("[RenewalActor] -> [GA]: %s %s %s%n", cmd.branchId(), cmd.userId(),
+									cmd.bookCode());
 							gateway.applyRenewal(cmd.branchId(), cmd.userId(), cmd.bookCode());
 							result = new StorageResult(true, "Renovación aplicada");
 						}
 						case "PRESTAMO" -> {
+							System.out.printf("[LoanActor] -> [GA]: %s %s %s%n", cmd.branchId(), cmd.userId(),
+									cmd.bookCode());
 							gateway.applyLoan(cmd.branchId(), cmd.userId(), cmd.bookCode());
 							result = new StorageResult(true, "Préstamo aplicado");
 						}

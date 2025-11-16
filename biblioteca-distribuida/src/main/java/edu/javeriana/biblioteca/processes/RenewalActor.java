@@ -22,16 +22,20 @@ public class RenewalActor {
 
 			sub.connect(subConnect); // Se suscribe al topico de renovaciones
 			sub.subscribe("RENOVACION".getBytes(ZMQ.CHARSET));
-			System.out.printf("[RenewalActor] se suscribio a [GA]: %s (topic RENOVACION)%n", subConnect);
+			System.out.print("[RenewalActor] se suscribio al topic RENOVACION%n");
 
 			gaReq.connect(gaConnect);
 			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaConnect);
 
+			System.out.println();
+			System.out.println();
+
 			while (true) {
 				// Se recibe la renovacion
-				String topic = sub.recvStr();
 				String payload = sub.recvStr();
 				Message msg = Message.parse(payload);
+				System.out.printf("[GC] -> [RenewalActor] -> [GA]: %s %s %s %s%n",
+						msg.type(), msg.branchId(), msg.userId(), msg.bookCode());
 
 				// Construir comando de almacenamiento
 				StorageCommand cmd = new StorageCommand(
@@ -43,8 +47,9 @@ public class RenewalActor {
 
 				String rawRes = gaReq.recvStr();
 				StorageResult res = StorageResult.parse(rawRes);
-				System.out.printf("[RenewalActor] BD -> %s (%s)%n",
+				System.out.printf("[GA] -> [RenewalActor]: %s (%s)%n",
 						res.ok() ? "OK" : "ERROR", res.message());
+				System.out.println();
 			}
 		}
 	}

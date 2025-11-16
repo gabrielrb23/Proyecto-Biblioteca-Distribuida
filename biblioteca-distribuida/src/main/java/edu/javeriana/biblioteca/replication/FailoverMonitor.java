@@ -32,7 +32,8 @@ public class FailoverMonitor {
 				ps.execute();
 			}
 			if (!router.isPrimaryUp()) {
-				router.switchToPrimary();
+				System.out.println(
+						"[FailoverMonitor] Primaria volvió, pero mantenemos escritura en secundaria (no auto-failback).");
 			}
 		} catch (Exception e) {
 			if (router.isPrimaryUp()) {

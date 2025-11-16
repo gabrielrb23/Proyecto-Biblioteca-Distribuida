@@ -9,38 +9,34 @@ import org.zeromq.SocketType;
 
 public class LoadManager {
   public static void main(String[] args) {
-    String repBindGc = AppConfig.get("gc.rep", "tcp://127.0.0.1:5555");
-    String pubBind = AppConfig.get("gc.pub", "tcp://127.0.0.1:5556");
-    String repBindAc = AppConfig.get("actor.loan.rep", "tcp://127.0.0.1:5557");
+    String repConnectPS = AppConfig.get("gc.rep", "tcp://127.0.0.1:5555");
+    String pubConnect = AppConfig.get("gc.pub", "tcp://127.0.0.1:5556");
+    String reqConnectAc = AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557");
 
     try (ZMQ.Context ctx = ZMQ.context(1);
         ZMQ.Socket rep = ctx.socket(SocketType.REP);
         ZMQ.Socket pub = ctx.socket(SocketType.PUB);
         ZMQ.Socket req = ctx.socket(SocketType.REQ)) {
 
-      rep.bind(repBindGc);
-      pub.bind(pubBind);
-      req.connect(repBindAc);
-      System.out.printf("[GC] Conectado a [PS]: %s y [GA]: %s%n", repBindGc, pubBind);
+      rep.bind(repConnectPS);
+      pub.bind(pubConnect);
+      req.connect(reqConnectAc);
+      System.out.printf("[GC] se conecto a [PS] y [LoanActor]: %s%n", repConnectPS, pubConnect);
 
       while (true) {
         String reqString = rep.recvStr();
         Message msg = Message.parse(reqString);
         String type = msg.type();
-        System.out.printf("[PS]->[GC]: %s %s%n", msg.type(), msg.bookCode());
+        System.out.printf("[PS]->[GC]: %s %s %s %s%n", msg.type(), msg.bookCode(), msg.branchId(), msg.userId());
 
         switch (type) {
           case "DEVOLUCION":
           case "RENOVACION":
             rep.send("Se ha recibido su solicitud de " + type + " para el libro " + msg.bookCode());
-
-            pub.sendMore(type);
             pub.send(msg.serialize());
-            System.out.printf("[GC] PUB topic=%s payload=%s%n", type, msg.serialize());
             break;
 
           case "PRESTAMO":
-            System.out.println("[GC] Enviando solicitud de PRESTAMO al LoanActor...");
             req.send(msg.serialize());
 
             String loanResStr = req.recvStr();
@@ -52,7 +48,7 @@ public class LoadManager {
               rep.send("No se pudo realizar el préstamo de " + msg.bookCode() + ": " + loanRes.message());
             }
 
-            System.out.printf("[GC] PRESTAMO resultado: %s (%s)%n", loanRes.ok() ? "OK" : "ERR", loanRes.message());
+            System.out.printf("[GC] -> [PS]: %s (%s)%n", loanRes.ok() ? "OK" : "ERR", loanRes.message());
             break;
 
           default:
