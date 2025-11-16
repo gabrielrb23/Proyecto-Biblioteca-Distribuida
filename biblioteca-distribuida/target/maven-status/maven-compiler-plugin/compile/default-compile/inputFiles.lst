@@ -1,6 +1,14 @@
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\common\AppConfig.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\Message.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\StorageCommand.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\StorageResult.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\persistence\StorageGateway.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\LoadManager.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\LoanActor.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\RenewalActor.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\ReturnActor.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\SolicitingProcess.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\StorageManager.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\replication\DataSourceRouter.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\replication\FailoverMonitor.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\replication\Replicator.java

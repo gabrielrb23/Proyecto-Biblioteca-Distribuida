@@ -34,14 +34,17 @@ public class SolicitingProcess {
 				if (line.isEmpty() || line.startsWith("#"))
 					continue;
 
-				String[] p = line.split(",", 2);
+				String[] p = line.split(",", 4);
 				String op = p[0].trim().toUpperCase();
-				String bookId = p[1].trim();
+				String branchId = p[1].trim();
+				String userId = p[2].trim();
+				String bookCode = p[3].trim();
 
 				// Generar la solicitud
 				Message msg = switch (op) {
-					case "D" -> Message.devolver(bookId);
-					case "R" -> Message.renovar(bookId);
+					case "DEVOLUCION" -> Message.devolver(branchId, userId, bookCode);
+					case "RENOVACION" -> Message.renovar(branchId, userId, bookCode);
+					case "PRESTAMO" -> Message.prestar(branchId, userId, bookCode);
 					default -> null;
 				};
 				if (msg == null) {
