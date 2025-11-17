@@ -1,6 +1,7 @@
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\common\AppConfig.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\common\AuditLogger.java
+C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\common\CryptoUtil.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\Message.java
-C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\StorageCommand.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\messaging\StorageResult.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\persistence\StorageGateway.java
 C:\Users\gabri\Documents\Proyecto Biblioteca\biblioteca-distribuida\src\main\java\edu\javeriana\biblioteca\processes\LoadManager.java

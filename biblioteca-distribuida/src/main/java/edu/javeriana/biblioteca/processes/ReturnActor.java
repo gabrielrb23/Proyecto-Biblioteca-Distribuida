@@ -1,8 +1,8 @@
 package edu.javeriana.biblioteca.processes;
 
 import edu.javeriana.biblioteca.common.AppConfig;
+import edu.javeriana.biblioteca.common.AuditLogger;
 import edu.javeriana.biblioteca.messaging.Message;
-import edu.javeriana.biblioteca.messaging.StorageCommand;
 import edu.javeriana.biblioteca.messaging.StorageResult;
 
 import org.zeromq.ZMQ;
@@ -31,13 +31,14 @@ public class ReturnActor {
 
       while (true) {
         // Se recibe la devolucion
+        String topic = sub.recvStr();
         String payload = sub.recvStr();
         Message msg = Message.parse(payload);
         System.out.printf("[GC] -> [ReturnActor] -> [GA]: %s %s %s %s%n",
             msg.type(), msg.branchId(), msg.userId(), msg.bookCode());
 
         // Construir comando de almacenamiento
-        StorageCommand cmd = new StorageCommand(
+        Message cmd = new Message(
             "DEVOLUCION",
             msg.branchId(),
             msg.userId(),
@@ -46,6 +47,20 @@ public class ReturnActor {
 
         String rawRes = gaReq.recvStr();
         StorageResult res = StorageResult.parse(rawRes);
+        if (res.ok()) {
+          AuditLogger.log(
+              "ReturnActor",
+              "DEVOLUCION_OK",
+              String.format("branch=%s user=%s book=%s", msg.branchId(), msg.userId(), msg.bookCode()),
+              "OK");
+        } else {
+          AuditLogger.log(
+              "ReturnActor",
+              "DEVOLUCION_FAIL",
+              String.format("branch=%s user=%s book=%s error=%s", msg.branchId(), msg.userId(), msg.bookCode(),
+                  res.message()),
+              "FAIL");
+        }
         System.out.printf("[GA] -> [ReturnActor]: %s (%s)%n",
             res.ok() ? "OK" : "ERROR", res.message());
         System.out.println();

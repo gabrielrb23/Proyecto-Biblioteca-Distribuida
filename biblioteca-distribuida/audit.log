@@ -1,0 +1,89 @@
+2025-11-17T15:58:30.950838500Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_201 book=BK-0101
+2025-11-17T15:58:32.392297200Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_202 book=BK-0102
+2025-11-17T15:58:36.141230700Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_203 book=BK-0103
+2025-11-17T15:58:37.255697100Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_204 book=BK-0104
+2025-11-17T15:58:39.697152200Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_205 book=BK-0105
+2025-11-17T15:58:40.941195300Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_206 book=BK-0106
+2025-11-17T15:58:43.755881200Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_207 book=BK-0107
+2025-11-17T15:58:46.686212900Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_208 book=BK-0108
+2025-11-17T15:58:47.770123700Z | pid=36464 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_209 book=BK-0109
+2025-11-17T16:12:39.835036Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_201 book=BK-0101 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:41.126932600Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_202 book=BK-0102 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:42.437022500Z | pid=28800 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_001 book=BK-0001 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:43.184585600Z | pid=28800 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_002 book=BK-0002 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:43.821026900Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_003 book=BK-0003 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:44.294378500Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_004 book=BK-0004 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:44.986923200Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_203 book=BK-0103 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:46.053568Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_204 book=BK-0104 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:47.068956400Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_005 book=BK-0005 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:47.688943100Z | pid=28800 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_006 book=BK-0006 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:48.374165600Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_205 book=BK-0105 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:49.393071700Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_206 book=BK-0106 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:50.432183900Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_007 book=BK-0007 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:51.154537200Z | pid=28800 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_008 book=BK-0008 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:51.823605500Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_207 book=BK-0107 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:52.869289200Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_009 book=BK-0009 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:53.618484500Z | pid=28800 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_010 book=BK-0010 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:54.319309200Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_208 book=BK-0108 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:55.343876100Z | pid=28600 | user=gabri | actor=GC | action=PRESTAMO_FAIL | status=FAIL | branch=S1 user=uS1_209 book=BK-0109 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:12:56.376404300Z | pid=22672 | user=gabri | actor=RenewalActor | action=RENOVACION_FAIL | status=ERROR | branch=S1 user=uS1_011 book=BK-0011 error=Error interno en GA: Connection to 127.0.0.1:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-11-17T16:14:25.045826100Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_201 book=BK-0101
+2025-11-17T16:14:26.214854Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_202 book=BK-0102
+2025-11-17T16:14:27.479958600Z | pid=29552 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_001 book=BK-0001
+2025-11-17T16:14:27.944076100Z | pid=29552 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_002 book=BK-0002
+2025-11-17T16:14:28.818855700Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_003 book=BK-0003
+2025-11-17T16:14:29.262832800Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_004 book=BK-0004
+2025-11-17T16:14:29.923961800Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_203 book=BK-0103
+2025-11-17T16:14:30.993910700Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_204 book=BK-0104
+2025-11-17T16:14:32.054425200Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_005 book=BK-0005
+2025-11-17T16:14:32.703913500Z | pid=29552 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_006 book=BK-0006
+2025-11-17T16:14:33.371570800Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_205 book=BK-0105
+2025-11-17T16:14:34.421020200Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_206 book=BK-0106
+2025-11-17T16:14:35.487152800Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_007 book=BK-0007
+2025-11-17T16:14:36.195099Z | pid=29552 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_008 book=BK-0008
+2025-11-17T16:14:36.894887500Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_207 book=BK-0107
+2025-11-17T16:14:37.962069400Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_009 book=BK-0009
+2025-11-17T16:14:38.592579400Z | pid=29552 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_010 book=BK-0010
+2025-11-17T16:14:39.240431300Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_208 book=BK-0108
+2025-11-17T16:14:40.300621200Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_209 book=BK-0109
+2025-11-17T16:14:41.416712800Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_011 book=BK-0011
+2025-11-17T16:15:48.585623300Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_201 book=BK-0101
+2025-11-17T16:15:49.670214800Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_202 book=BK-0102
+2025-11-17T16:15:50.930370600Z | pid=3368 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_001 book=BK-0001
+2025-11-17T16:15:51.415631100Z | pid=3368 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_002 book=BK-0002
+2025-11-17T16:15:52.064045300Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_003 book=BK-0003
+2025-11-17T16:15:52.682340800Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_004 book=BK-0004
+2025-11-17T16:15:53.365693600Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_203 book=BK-0103
+2025-11-17T16:15:54.449281700Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_204 book=BK-0104
+2025-11-17T16:15:55.478079100Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_005 book=BK-0005
+2025-11-17T16:15:56.161627100Z | pid=3368 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_006 book=BK-0006
+2025-11-17T16:15:56.852172800Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_205 book=BK-0105
+2025-11-17T16:15:57.866576600Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_206 book=BK-0106
+2025-11-17T16:15:58.892610200Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_007 book=BK-0007
+2025-11-17T16:15:59.570111300Z | pid=3368 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_008 book=BK-0008
+2025-11-17T16:16:00.331843400Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_207 book=BK-0107
+2025-11-17T16:16:01.456485500Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_009 book=BK-0009
+2025-11-17T16:16:02.085245400Z | pid=3368 | user=gabri | actor=ReturnActor | action=DEVOLUCION_OK | status=OK | branch=S1 user=uS1_010 book=BK-0010
+2025-11-17T16:16:02.813014400Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_208 book=BK-0108
+2025-11-17T16:16:03.908339500Z | pid=30304 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_209 book=BK-0109
+2025-11-17T16:16:04.994912300Z | pid=24404 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_011 book=BK-0011
+2025-11-17T16:20:10.388962400Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_201 book=BK-0101
+2025-11-17T16:20:11.597119600Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_202 book=BK-0102
+2025-11-17T16:20:12.894859100Z | pid=17376 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_001 book=BK-0001 error=No se encontró un préstamo ACTIVO para ese usuario/libro/sede
+2025-11-17T16:20:13.382850500Z | pid=17376 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_002 book=BK-0002 error=No se encontró un préstamo ACTIVO para ese usuario/libro/sede
+2025-11-17T16:20:14.366674500Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_003 book=BK-0003
+2025-11-17T16:20:14.909742800Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_004 book=BK-0004
+2025-11-17T16:20:15.497358400Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_203 book=BK-0103
+2025-11-17T16:20:16.647256200Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_204 book=BK-0104
+2025-11-17T16:20:17.693981200Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_005 book=BK-0005
+2025-11-17T16:20:18.378522300Z | pid=17376 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_006 book=BK-0006 error=No se encontró un préstamo ACTIVO para ese usuario/libro/sede
+2025-11-17T16:20:19.059113700Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_205 book=BK-0105
+2025-11-17T16:20:20.098354700Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_206 book=BK-0106
+2025-11-17T16:20:21.137628700Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_007 book=BK-0007
+2025-11-17T16:20:21.830283900Z | pid=17376 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_008 book=BK-0008 error=No se encontró un préstamo ACTIVO para ese usuario/libro/sede
+2025-11-17T16:20:22.466132900Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_207 book=BK-0107
+2025-11-17T16:20:23.520362Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_009 book=BK-0009
+2025-11-17T16:20:24.159753600Z | pid=17376 | user=gabri | actor=ReturnActor | action=DEVOLUCION_FAIL | status=FAIL | branch=S1 user=uS1_010 book=BK-0010 error=No se encontró un préstamo ACTIVO para ese usuario/libro/sede
+2025-11-17T16:20:24.829644800Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_208 book=BK-0108
+2025-11-17T16:20:25.900007700Z | pid=36876 | user=gabri | actor=GC | action=PRESTAMO_OK | status=OK | branch=S1 user=uS1_209 book=BK-0109
+2025-11-17T16:20:26.981590600Z | pid=19932 | user=gabri | actor=RenewalActor | action=RENOVACION_OK | status=OK | branch=S1 user=uS1_011 book=BK-0011

@@ -1,7 +1,7 @@
 package edu.javeriana.biblioteca.processes;
 
 import edu.javeriana.biblioteca.common.AppConfig;
-import edu.javeriana.biblioteca.messaging.StorageCommand;
+import edu.javeriana.biblioteca.messaging.Message;
 import edu.javeriana.biblioteca.messaging.StorageResult;
 import edu.javeriana.biblioteca.persistence.StorageGateway;
 import edu.javeriana.biblioteca.replication.DataSourceRouter;
@@ -43,7 +43,7 @@ public class StorageManager {
 
 			while (true) {
 				String raw = rep.recvStr();
-				StorageCommand cmd = StorageCommand.parse(raw);
+				Message cmd = Message.parse(raw);
 				StorageResult result;
 				try {
 					switch (cmd.type()) {
