@@ -28,7 +28,6 @@ public class LoanActor {
 			System.out.printf("[LoanActor] se conecto a [GA]: %s%n", gaConnect);
 
 			System.out.println();
-			System.out.println();
 
 			while (true) {
 				String rawCmd = gcRep.recvStr();
@@ -42,7 +41,7 @@ public class LoanActor {
 				String rawRes = gaReq.recvStr();
 				result = StorageResult.parse(rawRes);
 				System.out.printf("[GA] -> [LoanActor]: %s (%s)%n",
-						result.ok() ? "OK" : "ERR", result.message());
+						result.ok() ? "OK" : "ERROR", result.message());
 				System.out.println();
 				gcRep.send(result.serialize());
 			}

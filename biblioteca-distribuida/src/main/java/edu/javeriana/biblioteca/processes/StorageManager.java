@@ -39,7 +39,7 @@ public class StorageManager {
 				ZMQ.Socket rep = ctx.socket(SocketType.REP)) {
 
 			rep.bind(bind);
-			System.out.print("[GA] Esperando comandos%n");
+			System.out.println("[GA] Esperando comandos");
 
 			while (true) {
 				String raw = rep.recvStr();
@@ -68,8 +68,13 @@ public class StorageManager {
 						default -> result = new StorageResult(false, "Tipo de comando desconocido: " + cmd.type());
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
-					result = new StorageResult(false, e.getMessage());
+					if (e instanceof IllegalStateException) {
+						System.out.println("[GA] Error de negocio: " + e.getMessage());
+						result = new StorageResult(false, e.getMessage());
+					} else {
+						e.printStackTrace();
+						result = new StorageResult(false, "Error interno en GA: " + e.getMessage());
+					}
 				}
 
 				rep.send(result.serialize());

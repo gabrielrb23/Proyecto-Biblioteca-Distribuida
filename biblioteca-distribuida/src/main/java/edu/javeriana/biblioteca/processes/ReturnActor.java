@@ -22,12 +22,11 @@ public class ReturnActor {
 
       sub.connect(subConnect); // Se suscribe al topico de devoluciones
       sub.subscribe("DEVOLUCION".getBytes(ZMQ.CHARSET));
-      System.out.print("[ReturnActor] se suscribio al topic DEVOLUCION%n");
+      System.out.println("[ReturnActor] se suscribio al topic DEVOLUCION");
 
       gaReq.connect(gaConnect);
       System.out.printf("[ReturnActor] se conecto a [GA]: %s%n", gaConnect);
 
-      System.out.println();
       System.out.println();
 
       while (true) {

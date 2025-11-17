@@ -22,12 +22,11 @@ public class RenewalActor {
 
 			sub.connect(subConnect); // Se suscribe al topico de renovaciones
 			sub.subscribe("RENOVACION".getBytes(ZMQ.CHARSET));
-			System.out.print("[RenewalActor] se suscribio al topic RENOVACION%n");
+			System.out.println("[RenewalActor] se suscribio al topic RENOVACION");
 
 			gaReq.connect(gaConnect);
 			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaConnect);
 
-			System.out.println();
 			System.out.println();
 
 			while (true) {

@@ -34,6 +34,7 @@ public class StorageGateway {
 				op.execute();
 			} else {
 				System.out.println("[StorageGateway] Error en operación: " + e.getMessage());
+				throw e;
 			}
 		}
 	}
@@ -60,6 +61,11 @@ public class StorageGateway {
 					psLoan.setString(3, branchId);
 					int updated = psLoan.executeUpdate();
 
+					if (updated == 0) {
+						throw new IllegalStateException(
+								"No se encontró un préstamo ACTIVO para ese usuario/libro/sede");
+					}
+
 					if (updated > 0) {
 						psInv.setString(1, branchId);
 						psInv.setString(2, bookCode);
@@ -82,19 +88,49 @@ public class StorageGateway {
 		runWithFailover(() -> {
 			try (Connection c = getWriteConnection()) {
 				c.setAutoCommit(false);
-				try (PreparedStatement ps = c.prepareStatement(
-						"UPDATE loans " +
-								"SET renewals = renewals + 1, due_date = due_date + INTERVAL '7 day' " +
-								"WHERE user_id=? AND book_code=? AND branch_id=? " +
-								"AND status='ACTIVE' AND renewals < 2")) {
-					ps.setString(1, userId);
-					ps.setString(2, bookCode);
-					ps.setString(3, branchId);
-					int updated = ps.executeUpdate();
-					if (updated == 0) {
+
+				try (
+						PreparedStatement psSelect = c.prepareStatement(
+								"SELECT status, renewals " +
+										"FROM loans " +
+										"WHERE user_id = ? AND book_code = ? AND branch_id = ? " +
+										"ORDER BY start_date DESC " +
+										"LIMIT 1 FOR UPDATE");
+						PreparedStatement psUpdate = c.prepareStatement(
+								"UPDATE loans " +
+										"SET renewals = renewals + 1, " +
+										"    due_date = due_date + INTERVAL '7 day' " +
+										"WHERE user_id = ? AND book_code = ? AND branch_id = ? " +
+										"  AND status = 'ACTIVE' AND renewals < 2")) {
+
+					psSelect.setString(1, userId);
+					psSelect.setString(2, bookCode);
+					psSelect.setString(3, branchId);
+					ResultSet rs = psSelect.executeQuery();
+
+					if (!rs.next()) {
 						throw new IllegalStateException(
-								"No se pudo renovar (no hay préstamo activo o ya tiene 2 renovaciones)");
+								"No existe ningún préstamo registrado para ese usuario/libro en la sede");
 					}
+
+					String status = rs.getString("status");
+					int renewals = rs.getInt("renewals");
+
+					if (!"ACTIVE".equalsIgnoreCase(status)) {
+						throw new IllegalStateException(
+								"No hay préstamo ACTIVO para ese usuario/libro en la sede");
+					}
+
+					if (renewals >= 2) {
+						throw new IllegalStateException(
+								"El préstamo ya alcanzó el máximo de 2 renovaciones");
+					}
+
+					psUpdate.setString(1, userId);
+					psUpdate.setString(2, bookCode);
+					psUpdate.setString(3, branchId);
+					psUpdate.executeUpdate();
+
 					c.commit();
 				} catch (Exception e) {
 					c.rollback();
@@ -102,7 +138,7 @@ public class StorageGateway {
 				}
 			}
 
-			// Replicación asíncrona de la renovación
+			// Replicación asíncrona de la renovación (solo si no hubo errores)
 			replicator.replicateRenewLoan(branchId, userId, bookCode);
 		});
 	}

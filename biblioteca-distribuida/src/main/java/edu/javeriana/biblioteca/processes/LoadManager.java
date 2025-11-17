@@ -47,8 +47,6 @@ public class LoadManager {
             } else {
               rep.send("No se pudo realizar el préstamo de " + msg.bookCode() + ": " + loanRes.message());
             }
-
-            System.out.printf("[GC] -> [PS]: %s (%s)%n", loanRes.ok() ? "OK" : "ERR", loanRes.message());
             break;
 
           default:
