@@ -18,4 +18,14 @@ public class AppConfig {
 	public static String get(String key, String def) {
 		return PROPS.getProperty(key, def);
 	}
+
+	public static String getEnvOrProp(String envVar, String propName, String def) {
+		String v = System.getenv(envVar);
+		if (v != null && !v.isEmpty())
+			return v;
+		v = PROPS.getProperty(propName);
+		if (v != null && !v.isEmpty())
+			return v;
+		return def;
+	}
 }
