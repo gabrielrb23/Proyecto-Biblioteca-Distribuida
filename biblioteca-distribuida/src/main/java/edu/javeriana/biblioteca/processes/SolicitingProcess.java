@@ -56,7 +56,7 @@ public class SolicitingProcess {
 				req.send(msg.serialize());
 				String ack = req.recvStr();
 				System.out.printf("[GC] -> [PS]: %s%n", ack);
-				Thread.sleep(20);
+				Thread.sleep(500);
 			}
 		}
 	}

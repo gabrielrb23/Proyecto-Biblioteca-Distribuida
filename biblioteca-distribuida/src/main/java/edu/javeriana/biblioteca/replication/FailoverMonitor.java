@@ -10,6 +10,7 @@ public class FailoverMonitor {
 	private final DataSourceRouter router;
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	private final long intervalMs;
+	private boolean once = false;
 
 	public FailoverMonitor(DataSourceRouter router, long intervalMs) {
 		this.router = router;
@@ -31,7 +32,8 @@ public class FailoverMonitor {
 					PreparedStatement ps = c.prepareStatement("SELECT 1")) {
 				ps.execute();
 			}
-			if (!router.isPrimaryUp()) {
+			if (!router.isPrimaryUp() && !once) {
+				once = true;
 				System.out.println(
 						"[FailoverMonitor] Primaria volvió, pero mantenemos escritura en secundaria (no auto-failback).");
 			}
