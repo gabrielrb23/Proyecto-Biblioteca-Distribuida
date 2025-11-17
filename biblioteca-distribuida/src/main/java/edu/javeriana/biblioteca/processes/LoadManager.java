@@ -1,6 +1,7 @@
 package edu.javeriana.biblioteca.processes;
 
 import edu.javeriana.biblioteca.common.AppConfig;
+import edu.javeriana.biblioteca.common.AuditLogger;
 import edu.javeriana.biblioteca.messaging.Message;
 import edu.javeriana.biblioteca.messaging.StorageResult;
 
@@ -31,8 +32,13 @@ public class LoadManager {
 
         switch (type) {
           case "DEVOLUCION":
+            rep.send("Se ha recibido su solicitud de " + type + " para el libro " + msg.bookCode());
+            pub.sendMore("DEVOLUCION");
+            pub.send(msg.serialize());
+            break;
           case "RENOVACION":
             rep.send("Se ha recibido su solicitud de " + type + " para el libro " + msg.bookCode());
+            pub.sendMore("RENOVACION");
             pub.send(msg.serialize());
             break;
 
@@ -44,8 +50,19 @@ public class LoadManager {
 
             if (loanRes.ok()) {
               rep.send("Préstamo concedido para el libro " + msg.bookCode() + ": " + loanRes.message());
+              AuditLogger.log(
+                  "GC",
+                  "PRESTAMO_OK",
+                  String.format("branch=%s user=%s book=%s", msg.branchId(), msg.userId(), msg.bookCode()),
+                  "OK");
             } else {
               rep.send("No se pudo realizar el préstamo de " + msg.bookCode() + ": " + loanRes.message());
+              AuditLogger.log(
+                  "GC",
+                  "PRESTAMO_FAIL",
+                  String.format("branch=%s user=%s book=%s error=%s", msg.branchId(), msg.userId(), msg.bookCode(),
+                      loanRes.message()),
+                  "FAIL");
             }
             break;
 

@@ -1,7 +1,7 @@
 package edu.javeriana.biblioteca.processes;
 
 import edu.javeriana.biblioteca.common.AppConfig;
-import edu.javeriana.biblioteca.messaging.StorageCommand;
+import edu.javeriana.biblioteca.messaging.Message;
 import edu.javeriana.biblioteca.messaging.StorageResult;
 
 import org.zeromq.ZMQ;
@@ -31,7 +31,7 @@ public class LoanActor {
 
 			while (true) {
 				String rawCmd = gcRep.recvStr();
-				StorageCommand cmd = StorageCommand.parse(rawCmd);
+				Message cmd = Message.parse(rawCmd);
 				System.out.printf("[GC] -> [LoanActor] -> [GA]: %s %s %s %s%n",
 						cmd.type(), cmd.branchId(), cmd.userId(), cmd.bookCode());
 

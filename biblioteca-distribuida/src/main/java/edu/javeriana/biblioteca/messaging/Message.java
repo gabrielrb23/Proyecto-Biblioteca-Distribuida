@@ -8,12 +8,12 @@ public record Message(String type, String branchId, String userId, String bookCo
   private static final String AES_KEY = AppConfig.getEnvOrProp(
       "ACTOR_ENCRYPTION_KEY",
       "actor.encryption.key",
-      "CHANGE_ME_DO_NOT_USE_IN_PRODUCTION");
+      "R3p9qL0wN7sX2bV4cY8mK1tH6uP5zQ3");
 
   private static final String HMAC_KEY = AppConfig.getEnvOrProp(
       "ACTOR_SHARED_SECRET",
       "actor.shared.secret",
-      "CHANGE_ME_DO_NOT_USE_IN_PRODUCTION");
+      "F8kP2xZ1qW7nT4mB9sD3vL6yH0cJ5rU");
 
   // Devolucion
   public static Message devolver(String branchId, String userId, String bookCode) {
