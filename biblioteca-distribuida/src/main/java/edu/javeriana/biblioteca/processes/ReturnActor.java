@@ -11,6 +11,23 @@ import org.zeromq.SocketType;
 public class ReturnActor {
   public static void main(String[] args) throws Exception {
 
+    boolean syncMode = false;
+    for (String a : args) {
+      if ("sync".equalsIgnoreCase(a) || "--sync".equalsIgnoreCase(a)) {
+        syncMode = true;
+        break;
+      }
+    }
+
+    if (!syncMode) {
+      runAsync();
+    } else {
+      runSync();
+    }
+
+  }
+
+  private static void runAsync() throws Exception {
     // Se llama al gestor de almacenamiento para procesar la devolucion
     String subConnect = AppConfig.get("actor.return.sub", "tcp://127.0.0.1:5556");
     String gaConnect = AppConfig.get("ga.rep", "tcp://127.0.0.1:5560");
@@ -64,6 +81,41 @@ public class ReturnActor {
         System.out.printf("[GA] -> [ReturnActor]: %s (%s)%n",
             res.ok() ? "OK" : "ERROR", res.message());
         System.out.println();
+      }
+    }
+  }
+
+  private static void runSync() throws Exception {
+    String repConnect = AppConfig.get("actor.return.rep", "tcp://127.0.0.1:5558");
+    String gaConnect = AppConfig.get("ga.rep", "tcp://127.0.0.1:5560");
+
+    try (ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket gcRep = ctx.socket(SocketType.REP);
+        ZMQ.Socket gaReq = ctx.socket(SocketType.REQ)) {
+
+      gcRep.bind(repConnect);
+      System.out.printf("[ReturnActor] se conecto a [GC]: %s%n", repConnect);
+
+      gaReq.connect(gaConnect);
+      System.out.printf("[ReturnActor] se conecto a [GA]: %s%n", gaConnect);
+
+      System.out.println();
+
+      while (true) {
+        String rawCmd = gcRep.recvStr();
+        Message cmd = Message.parse(rawCmd);
+        System.out.printf("[GC] -> [ReturnActor] -> [GA]: %s %s %s %s%n",
+            cmd.type(), cmd.branchId(), cmd.userId(), cmd.bookCode());
+
+        StorageResult result;
+        gaReq.send(cmd.serialize());
+
+        String rawRes = gaReq.recvStr();
+        result = StorageResult.parse(rawRes);
+        System.out.printf("[GA] -> [ReturnActor]: %s (%s)%n",
+            result.ok() ? "OK" : "ERROR", result.message());
+        System.out.println();
+        gcRep.send(result.serialize());
       }
     }
   }
