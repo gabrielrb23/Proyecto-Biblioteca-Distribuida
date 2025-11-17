@@ -11,7 +11,7 @@ public class LoanActor {
 	public static void main(String[] args) throws Exception {
 
 		// Se llama al gestor de almacenamiento para procesar el prestamo
-		String repConnect = AppConfig.get("actor.loan.rep", "tcp://127.0.0.1:5557");
+		String repConnect = AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557");
 		String gaConnect = AppConfig.get("ga.rep", "tcp://127.0.0.1:5560");
 
 		// Se conecta al gestor de almacenamiento
