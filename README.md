@@ -1,113 +1,166 @@
-# Proyecto Biblioteca Distribuida
+# 📚 Proyecto Biblioteca Distribuida
+Sistema de Biblioteca con Arquitectura Distribuida, Concurrencia, Tolerancia a Fallos y Replicación  
+**Java + ZeroMQ + PostgreSQL**
 
-Este proyecto es una implementación distribuida de una biblioteca, desarrollado en Java y gestionado con Maven.
+## 🚀 Descripción General
 
-## Requisitos
+Este proyecto implementa un **sistema de biblioteca distribuido**, tolerante a fallos y completamente desacoplado.  
+Está diseñado con **actores**, **procesos independientes**, **replicación de BD**, **failover automático**, y **ZeroMQ** como middleware de mensajería.
 
-- Java 8 o superior
-- Maven
+El sistema se compone de:
 
-## Estructura del proyecto
+- **GA – Gestor de Almacenamiento (StorageManager)**  
+- **GC – Gestor de Carga (LoadManager)**  
+- **Actores** (LoanActor, ReturnActor, RenewalActor)  
+- **PS – Proceso Solicitante (SolicitingProcess)**  
+- **BD Primaria y Secundaria** con replicación manual
 
-- Código fuente: `src/main/java/edu/javeriana/biblioteca/`
-- Archivos de configuración: `src/main/resources/`
-- Archivos de prueba: `src/main/resources/test-files/`
+✔ Cada proceso corre en su propia JVM  
+✔ Comunicación con sockets ZeroMQ (REQ/REP – PUB/SUB)  
+✔ Soporte para operación local y distribuida  
+✔ Failover automático GA → GA secundario  
+✔ Failover GC → GC secundario  
+✔ Actores con idempotencia y reintentos  
+✔ PS con tolerancia a fallos y rotación de GC  
+✔ Transacciones ACID + `FOR UPDATE` para consistencia
 
-## Ejecución de los procesos principales
+---
 
-Para ejecutar los diferentes procesos del sistema, utiliza los siguientes comandos en la raíz del proyecto:
-
-### 1. LoadManager
+# 🧩 Arquitectura General
 
 ```
-mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoadManager"
+          ┌──────────────────┐
+          │  SolicitingProcess│
+          └───────┬──────────┘
+                  │ REQ/REP (failover)
+                  ▼
+        ┌──────────────────────┐
+        │   Gestores de Carga  │
+        │  GC Primario / Sec.  │
+        └──────┬───────────────┘
+               │ PUB/SUB
+               ▼
+ ┌─────────────┬─────────────────────────┬─────────────────────────┐
+ │         LoanActor                   ReturnActor               RenewalActor
+ │             │ REQ/REP con failover hacia GA                     │       
+ └─────────────┴──────────────┬─────────┴──────────────┬──────────┘
+                              │
+                              ▼
+                  ┌──────────────────────┐
+                  │ Gestor Almacenamiento│
+                  │ GA Primario / Sec.   │
+                  └───────────┬──────────┘
+                              │ SQL
+                              ▼
+             BD Primaria ←── Replicación ─→ BD Secundaria
 ```
 
-### 2. ReturnActor
+---
+
+# 🛠️ Comandos de Ejecución (modo local)
+
+## 🟩 1. GA – Gestores de Almacenamiento (Primario y Secundario)
 
 ```
+# GA Primario
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.StorageManager" -Dga.rep=tcp://0.0.0.0:5560
+
+# GA Secundario
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.StorageManager" -Dga.rep=tcp://0.0.0.0:5564
+```
+
+---
+
+## 🟦 2. GC – Gestores de Carga
+
+### Modo Asíncrono
+
+```
+# GC Primario
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoadManager" -Dgc.rep=tcp://0.0.0.0:5555 -Dgc.pub=tcp://0.0.0.0:5556
+
+# GC Secundario
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoadManager" -Dgc.rep=tcp://0.0.0.0:5551 -Dgc.pub=tcp://0.0.0.0:5552
+```
+
+### Modo Sincrónico
+
+```
+# GC Primario Sync
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoadManager" -Dgc.rep=tcp://0.0.0.0:5555 -Dgc.pub=tcp://0.0.0.0:5556 -Dexec.args="sync"
+
+# GC Secundario Sync
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoadManager" -Dgc.rep=tcp://0.0.0.0:5551 -Dgc.pub=tcp://0.0.0.0:5552 -Dexec.args="sync"
+```
+
+---
+
+## 🟨 3. Actores
+
+### Modo Async
+
+```
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoanActor"
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.RenewalActor"
 mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.ReturnActor"
 ```
 
-### 3. RenewalActor
+### Modo Sync
 
 ```
-mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.RenewalActor"
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.LoanActor" -Dexec.args="--sync"
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.RenewalActor" -Dexec.args="--sync"
+mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.ReturnActor" -Dexec.args="--sync"
 ```
 
-### 4. SolicitingProcess
+---
 
-Puedes ejecutar el proceso de solicitud pasando como argumento el archivo de prueba que desees:
+## 🟧 4. PS – Proceso Solicitante
 
 ```
 mvn exec:java -Dexec.mainClass="edu.javeriana.biblioteca.processes.SolicitingProcess" -Dexec.args="src/main/resources/test-files/S01.txt"
 ```
 
-Cambia `S01.txt` por el archivo de prueba que desees utilizar (`S02.txt`, `S03.txt`, etc.).
+---
 
-## Configuración para múltiples máquinas
+# 🔧 Configuración (`app.properties`)
 
-Para ejecutar el sistema en múltiples máquinas, es necesario configurar correctamente el archivo `app.properties` ubicado en `src/main/resources/`.
-
-### Configuración actual (una sola máquina)
-
-```properties
-gc.rep=tcp://127.0.0.1:5555
-gc.pub=tcp://127.0.0.1:5556
-
-actor.return.sub=tcp://127.0.0.1:5556
-actor.renewal.sub=tcp://127.0.0.1:5556
+```
+ga.rep.endpoints=tcp://localhost:5560,tcp://localhost:5564
+ps.gc.endpoints=tcp://localhost:5555,tcp://localhost:5551
+actor.loan.sub=tcp://localhost:5556
+actor.return.sub=tcp://localhost:5556
+actor.renew.sub=tcp://localhost:5556
+actor.loan.req=tcp://localhost:5561
+actor.return.req=tcp://localhost:5562
+actor.renew.req=tcp://localhost:5563
+db.primary.url=jdbc:postgresql://localhost:5432/BDPrimaria
+db.secondary.url=jdbc:postgresql://localhost:5432/BDSecundaria
 ```
 
-### Configuración para múltiples máquinas
+---
 
-#### En la máquina que ejecuta LoadManager (servidor central):
+# 🧪 Archivos de prueba
 
-```properties
-gc.rep=tcp://*:5555
-gc.pub=tcp://*:5556
+Se encuentran en:
 
-actor.return.sub=tcp://IP_DEL_SERVIDOR:5556
-actor.renewal.sub=tcp://IP_DEL_SERVIDOR:5556
+```
+src/main/resources/test-files/
 ```
 
-#### En las máquinas que ejecutan los actores (ReturnActor, RenewalActor, SolicitingProcess):
+Ejemplo:
 
-```properties
-gc.rep=tcp://IP_DEL_SERVIDOR:5555
-gc.pub=tcp://IP_DEL_SERVIDOR:5556
-
-actor.return.sub=tcp://IP_DEL_SERVIDOR:5556
-actor.renewal.sub=tcp://IP_DEL_SERVIDOR:5556
+```
+PRESTAMO,S1,U1,BK-0001
+DEVOLUCION,S1,U2,BK-0031
+RENOVACION,S1,U5,BK-0011
 ```
 
-### Pasos para configuración distribuida:
+---
 
-1. **Identifica la IP del servidor**: Reemplaza `IP_DEL_SERVIDOR` con la dirección IP real de la máquina que ejecutará el LoadManager.
+# 📝 Notas Finales
 
-2. **Configura el firewall**: Asegúrate de que los puertos 5555 y 5556 estén abiertos en el firewall de la máquina servidor.
-
-3. **Verifica la conectividad**: Las máquinas cliente deben poder conectarse a la IP del servidor en los puertos especificados.
-
-4. **Orden de ejecución**:
-   - Primero ejecuta el LoadManager en la máquina servidor
-   - Luego ejecuta los actores (ReturnActor, RenewalActor) en las máquinas cliente
-   - Finalmente ejecuta SolicitingProcess en las máquinas que necesiten realizar solicitudes
-
-### Ejemplo práctico:
-
-Si el servidor tiene IP `192.168.1.100`, el archivo `app.properties` en las máquinas cliente sería:
-
-```properties
-gc.rep=tcp://192.168.1.100:5555
-gc.pub=tcp://192.168.1.100:5556
-
-actor.return.sub=tcp://192.168.1.100:5556
-actor.renewal.sub=tcp://192.168.1.100:5556
-```
-
-## Notas
-
-- Asegúrate de tener configurado correctamente el archivo `app.properties` según el tipo de despliegue.
-- Los archivos de prueba se encuentran en `src/main/resources/test-files/`.
-- Para entornos distribuidos, verifica que todas las máquinas tengan acceso de red entre sí.
+- Cada proceso debe ejecutarse en una consola independiente.  
+- Totalmente compatible con despliegue distribuido (múltiples máquinas).  
+- Idempotencia, failover y replicación implementados.  
+- ZeroMQ garantiza bajo acoplamiento y alta disponibilidad.
