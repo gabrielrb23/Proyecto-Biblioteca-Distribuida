@@ -242,7 +242,7 @@ ps.rcv.timeout.ms=2000
 
 El sistema implementa **cifrado de mensajes** para proteger la comunicación entre procesos:
 
-- Se usa una capa de mensajería basada en objetos como `Message` y `StorageCommand`.
+- Se usa una capa de mensajería basada en objetos como `Message`.
 - Antes de circular por ZeroMQ, los mensajes pueden:
   - serializarse (JSON/string)
   - cifrarse usando una clave compartida (leída desde `AppConfig`)
