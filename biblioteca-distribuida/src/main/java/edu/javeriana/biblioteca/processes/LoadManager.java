@@ -27,9 +27,9 @@ public class LoadManager {
   }
 
   private static void runAsync() {
-    String repConnectPS = AppConfig.get("gc.rep", "tcp://127.0.0.1:5555");
-    String pubConnect = AppConfig.get("gc.pub", "tcp://127.0.0.1:5556");
-    String reqConnectAc = AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557");
+    String repConnectPS = System.getProperty("gc.rep", AppConfig.get("gc.rep", "tcp://127.0.0.1:5555"));
+    String pubConnect = System.getProperty("gc.pub", AppConfig.get("gc.pub", "tcp://127.0.0.1:5556"));
+    String reqConnectAc = System.getProperty("actor.loan.req", AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557"));
 
     try (ZMQ.Context ctx = ZMQ.context(1);
         ZMQ.Socket rep = ctx.socket(SocketType.REP);
@@ -41,6 +41,7 @@ public class LoadManager {
       req.connect(reqConnectAc);
 
       System.out.printf("[GC] se conecto a [PS] y [LoanActor]: %s y %s%n", repConnectPS, pubConnect);
+      System.out.println();
 
       while (true) {
         String reqString = rep.recvStr();
@@ -91,10 +92,12 @@ public class LoadManager {
   }
 
   private static void runSync() {
-    String repConnectPS = AppConfig.get("gc.rep", "tcp://127.0.0.1:5555");
-    String loanReqConn = AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557");
-    String returnReqConn = AppConfig.get("actor.return.req", "tcp://127.0.0.1:5558");
-    String renewalReqConn = AppConfig.get("actor.renewal.req", "tcp://127.0.0.1:5559");
+    String repConnectPS = System.getProperty("gc.rep", AppConfig.get("gc.rep", "tcp://127.0.0.1:5555"));
+    String loanReqConn = System.getProperty("actor.loan.req", AppConfig.get("actor.loan.req", "tcp://127.0.0.1:5557"));
+    String returnReqConn = System.getProperty("actor.return.req",
+        AppConfig.get("actor.return.req", "tcp://127.0.0.1:5558"));
+    String renewalReqConn = System.getProperty("actor.renew.req",
+        AppConfig.get("actor.renew.req", "tcp://127.0.0.1:5559"));
 
     try (ZMQ.Context ctx = ZMQ.context(1);
         ZMQ.Socket rep = ctx.socket(SocketType.REP);

@@ -28,21 +28,32 @@ public class RenewalActor {
 
 	private static void runAsync() throws Exception {
 		// Se llama al gestor de almacenamiento para procesar la renovacion
-		String subConnect = AppConfig.get("actor.renewal.sub", "tcp://127.0.0.1:5556");
-		String gaConnect = AppConfig.get("ga.rep", "tcp://127.0.0.1:5560");
+		String subConnect = AppConfig.get("actor.renew.sub", "tcp://127.0.0.1:5556");
+		String[] subEndpoints = subConnect.split(",");
+		String gaEndpointsConf = AppConfig.get("ga.rep.endpoints", "tcp://10.43.97.18:5560");
+		String[] gaEndpoints = gaEndpointsConf.split(",");
+		int gaSendTimeout = 2000;
+		int gaRecvTimeout = 2000;
+		int gaIndex = 0;
 
 		// Se conecta al gestor de almacenamiento
 		try (ZMQ.Context ctx = ZMQ.context(1);
-				ZMQ.Socket sub = ctx.socket(SocketType.SUB);
-				ZMQ.Socket gaReq = ctx.socket(SocketType.REQ)) {
+				ZMQ.Socket sub = ctx.socket(SocketType.SUB)) {
 
-			sub.connect(subConnect); // Se suscribe al topico de renovaciones
+			sub.connect(subEndpoints[0].trim()); // Se suscribe al topico de renovaciones
+			if (subEndpoints.length == 2) {
+				sub.connect(subEndpoints[1].trim());
+
+			}
 			sub.subscribe("RENOVACION".getBytes(ZMQ.CHARSET));
 			System.out.println("[RenewalActor] se suscribio al topic RENOVACION");
 
-			gaReq.connect(gaConnect);
-			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaConnect);
+			ZMQ.Socket gaReq = ctx.socket(SocketType.REQ);
+			gaReq.setSendTimeOut(gaSendTimeout);
+			gaReq.setReceiveTimeOut(gaRecvTimeout);
+			gaReq.connect(gaEndpoints[gaIndex].trim());
 
+			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaEndpoints[gaIndex].trim());
 			System.out.println();
 
 			while (true) {
@@ -59,17 +70,59 @@ public class RenewalActor {
 						msg.branchId(),
 						msg.userId(),
 						msg.bookCode());
-				gaReq.send(cmd.serialize());
 
-				String rawRes = gaReq.recvStr();
-				StorageResult res = StorageResult.parse(rawRes);
-				if (res.ok()) {
-					AuditLogger.log(
-							"RenewalActor",
-							"RENOVACION_OK",
-							String.format("branch=%s user=%s book=%s", msg.branchId(), msg.userId(), msg.bookCode()),
-							"OK");
-				} else {
+				boolean sent = false;
+				int attempts = 0;
+				StorageResult res = null;
+
+				while (!sent && attempts < gaEndpoints.length) {
+					try {
+						gaReq.send(cmd.serialize());
+						String rawRes = gaReq.recvStr();
+						if (rawRes == null) {
+							throw new RuntimeException("Timeout al recibir respuesta de GA");
+						}
+
+						res = StorageResult.parse(rawRes);
+						if (res.ok()) {
+							AuditLogger.log(
+									"RenewalActor",
+									"RENOVACION_OK",
+									String.format("branch=%s user=%s book=%s", msg.branchId(), msg.userId(),
+											msg.bookCode()),
+									"OK");
+						} else {
+							AuditLogger.log(
+									"RenewalActor",
+									"RENOVACION_FAIL",
+									String.format("branch=%s user=%s book=%s error=%s", msg.branchId(), msg.userId(),
+											msg.bookCode(), res.message()),
+									"ERROR");
+						}
+						System.out.printf("[GA] -> [RenewalActor]: %s (%s)%n",
+								res.ok() ? "OK" : "ERROR", res.message());
+						System.out.println();
+						sent = true;
+					} catch (Exception e) {
+						System.err.println(
+								"[RenewalActor] Error con GA " + gaEndpoints[gaIndex].trim() + ": " + e.getMessage());
+
+						// Cambiar al siguiente GA
+						gaIndex = gaIndex + 1;
+
+						// Recrear socket REQ hacia el nuevo GA
+						gaReq.close();
+						gaReq = ctx.socket(SocketType.REQ);
+						gaReq.setSendTimeOut(gaSendTimeout);
+						gaReq.setReceiveTimeOut(gaRecvTimeout);
+						gaReq.connect(gaEndpoints[gaIndex].trim());
+						System.out.printf("[RenewalActor] Reintentando con GA: %s%n", gaEndpoints[gaIndex].trim());
+						attempts++;
+					}
+				}
+				if (!sent) {
+					res = new StorageResult(false, "No se pudo conectar con ningún Gestor de Almacenamiento");
+					System.err.println("[RenewalActor] " + res.message());
 					AuditLogger.log(
 							"RenewalActor",
 							"RENOVACION_FAIL",
@@ -77,28 +130,35 @@ public class RenewalActor {
 									msg.bookCode(), res.message()),
 							"ERROR");
 				}
-				System.out.printf("[GA] -> [RenewalActor]: %s (%s)%n",
-						res.ok() ? "OK" : "ERROR", res.message());
-				System.out.println();
 			}
 		}
 	}
 
 	private static void runSync() throws Exception {
-		String repConnect = AppConfig.get("actor.renewal.rep", "tcp://127.0.0.1:5558");
-		String gaConnect = AppConfig.get("ga.rep", "tcp://127.0.0.1:5560");
+		String repConnect = System.getProperty(
+				"actor.renew.req",
+				AppConfig.get("actor.renew.req", "tcp://0.0.0.0:5559"));
+
+		String gaEndpointsConf = System.getProperty(
+				"ga.rep.endpoints",
+				AppConfig.get("ga.rep.endpoints", "tcp://127.0.0.1:5560"));
+		String[] gaEndpoints = gaEndpointsConf.split(",");
+
+		int gaSendTimeout = 2000;
+		int gaRecvTimeout = 2000;
+		int gaIndex = 0;
 
 		try (ZMQ.Context ctx = ZMQ.context(1);
-				ZMQ.Socket gcRep = ctx.socket(SocketType.REP);
-				ZMQ.Socket gaReq = ctx.socket(SocketType.REQ)) {
+				ZMQ.Socket gcRep = ctx.socket(SocketType.REP)) {
 
 			gcRep.bind(repConnect);
 			System.out.printf("[RenewalActor] se conecto a [GC]: %s%n", repConnect);
 
-			gaReq.connect(gaConnect);
-			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaConnect);
-
-			System.out.println();
+			ZMQ.Socket gaReq = ctx.socket(SocketType.REQ);
+			gaReq.setSendTimeOut(gaSendTimeout);
+			gaReq.setReceiveTimeOut(gaRecvTimeout);
+			gaReq.connect(gaEndpoints[gaIndex].trim());
+			System.out.printf("[RenewalActor] se conecto a [GA]: %s%n", gaEndpoints[gaIndex]);
 
 			while (true) {
 				String rawCmd = gcRep.recvStr();
@@ -106,14 +166,49 @@ public class RenewalActor {
 				System.out.printf("[GC] -> [RenewalActor] -> [GA]: %s %s %s %s%n",
 						cmd.type(), cmd.branchId(), cmd.userId(), cmd.bookCode());
 
-				StorageResult result;
-				gaReq.send(cmd.serialize());
+				StorageResult result = null;
+				boolean sent = false;
+				int attempts = 0;
 
-				String rawRes = gaReq.recvStr();
-				result = StorageResult.parse(rawRes);
-				System.out.printf("[GA] -> [RenewalActor]: %s (%s)%n",
-						result.ok() ? "OK" : "ERROR", result.message());
-				System.out.println();
+				while (!sent && attempts < gaEndpoints.length) {
+					try {
+						gaReq.send(cmd.serialize());
+						String rawRes = gaReq.recvStr();
+						if (rawRes == null) {
+							throw new RuntimeException("Timeout esperando GA");
+						}
+
+						result = StorageResult.parse(rawRes);
+						System.out.printf("[GA] -> [RenewalActor]: %s (%s)%n",
+								result.ok() ? "OK" : "ERROR", result.message());
+						sent = true;
+
+					} catch (Exception e) {
+						System.err.printf("[RenewalActor] Error con GA %s: %s%n",
+								gaEndpoints[gaIndex], e.getMessage());
+
+						attempts++;
+						if (attempts >= gaEndpoints.length) {
+							break;
+						}
+
+						gaIndex = (gaIndex + 1) % gaEndpoints.length;
+
+						gaReq.close();
+						gaReq = ctx.socket(SocketType.REQ);
+						gaReq.setSendTimeOut(gaSendTimeout);
+						gaReq.setReceiveTimeOut(gaRecvTimeout);
+						gaReq.connect(gaEndpoints[gaIndex].trim());
+						System.out.printf("[RenewalActor] Reintentando con GA %s%n",
+								gaEndpoints[gaIndex]);
+					}
+				}
+
+				if (!sent) {
+					result = new StorageResult(false, "No se pudo contactar ningún GA");
+					System.err.println("[RenewalActor] " + result.message());
+				}
+
 				gcRep.send(result.serialize());
 			}
 		}

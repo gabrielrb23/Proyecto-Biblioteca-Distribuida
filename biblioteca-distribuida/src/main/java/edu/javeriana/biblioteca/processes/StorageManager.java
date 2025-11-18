@@ -23,8 +23,7 @@ public class StorageManager {
 		String dbSUser = AppConfig.get("db.secondary.user", "postgres");
 		String dbSPass = AppConfig.get("db.secondary.pass", "123");
 
-		// Endpoint ZeroMQ para GA
-		String bind = AppConfig.get("ga.rep", "tcp://0.0.0.0:5560");
+		String bind = System.getProperty("ga.rep", AppConfig.get("ga.rep", "tcp://0.0.0.0:5560"));
 
 		DataSourceRouter router = new DataSourceRouter(dbUrl, dbUser, dbPass, dbSUrl, dbSUser, dbSPass);
 		Replicator replicator = new Replicator(router);
@@ -39,7 +38,8 @@ public class StorageManager {
 				ZMQ.Socket rep = ctx.socket(SocketType.REP)) {
 
 			rep.bind(bind);
-			System.out.println("[GA] Esperando comandos");
+			System.out.println("[GA] Esperando comandos en " + bind);
+			System.out.println();
 
 			while (true) {
 				String raw = rep.recvStr();
