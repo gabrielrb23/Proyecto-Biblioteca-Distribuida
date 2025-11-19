@@ -13,6 +13,7 @@ public class StorageGateway {
 	private final Replicator replicator;
 
 	public StorageGateway(DataSourceRouter router, Replicator replicator) {
+		// Router para elegir primaria/secundaria y replicador para sincronizar
 		this.router = router;
 		this.replicator = replicator;
 	}
@@ -20,12 +21,14 @@ public class StorageGateway {
 	/** Operación genérica con reintento en secundaria si la primaria falla */
 	@FunctionalInterface
 	private interface StorageOperation {
+		// Representa una operación que se ejecuta con failover
 		void execute() throws Exception;
 	}
 
 	private void runWithFailover(StorageOperation op) throws Exception {
-		final int maxAttempts = 5; // número total de intentos
-		final long waitMs = 2000; // espera entre intentos (2 segundos)
+		// Ejecuta con reintentos y cambia a secundaria si la primaria falla
+		final int maxAttempts = 5;
+		final long waitMs = 2000;
 
 		int attempt = 1;
 		while (true) {
@@ -34,6 +37,7 @@ public class StorageGateway {
 				return;
 			} catch (Exception e) {
 				if (!(e instanceof java.sql.SQLException)) {
+					// Errores no SQL se propagan directamente
 					System.out.println("[StorageGateway] Error de negocio / no SQL: " + e.getMessage());
 					throw e;
 				}
@@ -41,11 +45,13 @@ public class StorageGateway {
 				System.err.println("[StorageGateway] Error SQL en intento " + attempt + ": " + e.getMessage());
 
 				if (attempt == 1 && router.isPrimaryUp()) {
+					// Primera falla SQL → mover a base secundaria
 					System.err.println("[StorageGateway] -> conmutando a secundaria");
 					router.switchToSecondary();
 				}
 
 				if (attempt >= maxAttempts) {
+					// No se pudo después de varios reintentos
 					System.err.println("[StorageGateway] No se pudo completar la operación tras "
 							+ maxAttempts + " intentos. Abortando.");
 					throw new IllegalStateException(
@@ -54,7 +60,7 @@ public class StorageGateway {
 				}
 
 				try {
-					Thread.sleep(waitMs);
+					Thread.sleep(waitMs); // pausa entre intentos
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt();
 					throw new IllegalStateException("Hilo interrumpido mientras se esperaba la BD", ie);
@@ -66,11 +72,13 @@ public class StorageGateway {
 	}
 
 	private Connection getWriteConnection() throws SQLException {
+		// Obtiene la conexión del nodo actual de escritura
 		DataSource ds = router.currentWrite();
 		return ds.getConnection();
 	}
 
 	public void applyReturn(String branchId, String userId, String bookCode) throws Exception {
+		// Aplica lógica de devolución con idempotencia y replicación si procede
 		runWithFailover(() -> {
 			try (Connection c = getWriteConnection()) {
 				c.setAutoCommit(false);
@@ -83,50 +91,50 @@ public class StorageGateway {
 										"SET available_copies = available_copies + 1 " +
 										"WHERE branch_id=? AND book_code=?")) {
 
+					// Intento normal de devolver préstamo activo
 					psLoan.setString(1, userId);
 					psLoan.setString(2, bookCode);
 					psLoan.setString(3, branchId);
 					int updated = psLoan.executeUpdate();
 
 					if (updated > 0) {
-						// Caso normal: pasamos de ACTIVE a RETURNED -> sumamos inventario
+						// Se devolvió → sumar inventario + replicar
 						psInv.setString(1, branchId);
 						psInv.setString(2, bookCode);
 						psInv.executeUpdate();
 						c.commit();
-						// Replicar solo cuando realmente se modificó inventario
 						replicator.replicateIncrementAvailable(branchId, bookCode);
 						return;
 					}
 
-					// Idempotencia: ¿ya estaba devuelto?
+					// Caso idempotente (ya devuelto o nunca prestado)
 					try (PreparedStatement psCheck = c.prepareStatement(
 							"SELECT status FROM loans " +
 									"WHERE user_id=? AND book_code=? AND branch_id=? " +
 									"ORDER BY start_date DESC LIMIT 1")) {
+
 						psCheck.setString(1, userId);
 						psCheck.setString(2, bookCode);
 						psCheck.setString(3, branchId);
 						ResultSet rs = psCheck.executeQuery();
 
 						if (!rs.next()) {
-							// Nunca hubo préstamo para este user/libro/sede
+							// No existe préstamo asociado
 							throw new IllegalStateException("No existe préstamo para devolver");
 						}
 
 						String status = rs.getString("status");
 						if ("RETURNED".equalsIgnoreCase(status)) {
-							// Ya estaba devuelto -> tratamos como operación idempotente OK
+							// Ya estaba devuelto → idempotente OK
 							c.commit();
 							return;
 						} else {
-							// Hay un préstamo pero no está ACTIVE ni RETURNED (caso raro)
 							throw new IllegalStateException(
 									"No se pudo devolver: estado actual del préstamo = " + status);
 						}
 					}
 				} catch (Exception e) {
-					c.rollback();
+					c.rollback(); // revertir cambios si algo falla
 					throw e;
 				}
 			}
@@ -134,6 +142,7 @@ public class StorageGateway {
 	}
 
 	public void applyRenewal(String branchId, String userId, String bookCode) throws Exception {
+		// Aplica una renovación si es válida; maneja idempotencia
 		runWithFailover(() -> {
 			try (Connection c = getWriteConnection()) {
 				c.setAutoCommit(false);
@@ -149,21 +158,18 @@ public class StorageGateway {
 					int updated = ps.executeUpdate();
 
 					if (updated > 0) {
-						// Caso normal: se aplicó una renovación válida
+						// Renovación válida aplicada → replicar
 						c.commit();
-						// Replicación de la renovación
 						replicator.replicateRenewLoan(branchId, userId, bookCode);
 						return;
 					}
 
-					// No se actualizó nada: puede ser que:
-					// - no haya préstamo
-					// - no esté activo
-					// - ya tenga 2 renovaciones (caso que queremos tratar como idempotente)
+					// Caso no actualizado: validar por qué
 					try (PreparedStatement psCheck = c.prepareStatement(
 							"SELECT renewals, status FROM loans " +
 									"WHERE user_id=? AND book_code=? AND branch_id=? " +
 									"ORDER BY start_date DESC LIMIT 1")) {
+
 						psCheck.setString(1, userId);
 						psCheck.setString(2, bookCode);
 						psCheck.setString(3, branchId);
@@ -182,14 +188,12 @@ public class StorageGateway {
 						}
 
 						if (renewals >= 2) {
-							// Ya tiene el máximo de renovaciones; tratamos como idempotente:
-							// no avanzamos la fecha, pero tampoco disparamos error de negocio.
+							// Renovación máxima → operación idempotente
 							c.commit();
 							return;
 						}
 
-						// Si llegamos aquí, hay una combinación rara (ej. renewals<2 pero la cláusula
-						// no aplicó)
+						// Si nada encaja → estado inconsistente
 						throw new IllegalStateException(
 								"No se pudo renovar (estado inconsistente: renewals=" + renewals + ", status=" + status
 										+ ")");
@@ -203,6 +207,8 @@ public class StorageGateway {
 	}
 
 	public void applyLoan(String branchId, String userId, String bookCode) throws Exception {
+		// Aplica un préstamo nuevo si hay inventario; idempotente si ya existe uno
+		// activo
 		runWithFailover(() -> {
 			try (Connection c = getWriteConnection()) {
 				c.setAutoCommit(false);
@@ -219,22 +225,19 @@ public class StorageGateway {
 										"WHERE branch_id=? AND book_code=?");
 						PreparedStatement psLoan = c.prepareStatement(
 								"INSERT INTO loans (user_id, book_code, branch_id, start_date, due_date, renewals, status) "
-										+
-										"VALUES (?,?,?,?,?,0,'ACTIVE')")) {
+										+ "VALUES (?,?,?,?,?,0,'ACTIVE')")) {
 
-					// 1. Idempotencia: ¿ya hay préstamo activo igual?
+					// Idempotencia: si ya existe préstamo activo, no hacer nada
 					psCheckLoan.setString(1, branchId);
 					psCheckLoan.setString(2, userId);
 					psCheckLoan.setString(3, bookCode);
 					ResultSet rsLoan = psCheckLoan.executeQuery();
 					if (rsLoan.next()) {
-						// Ya existe un préstamo activo para este usuario/libro/sede
-						// -> consideramos la operación como idempotente y NO hacemos nada más.
 						c.commit();
 						return;
 					}
 
-					// 2. Flujo normal: revisar inventario
+					// Inventario disponible
 					psInv.setString(1, branchId);
 					psInv.setString(2, bookCode);
 					ResultSet rs = psInv.executeQuery();
@@ -246,12 +249,12 @@ public class StorageGateway {
 						throw new IllegalStateException("No hay ejemplares disponibles en la sede");
 					}
 
-					// 3. Actualizar inventario
+					// Actualizar inventario
 					psUpdateInv.setString(1, branchId);
 					psUpdateInv.setString(2, bookCode);
 					psUpdateInv.executeUpdate();
 
-					// 4. Crear préstamo
+					// Crear préstamo
 					LocalDate start = LocalDate.now();
 					LocalDate due = start.plusDays(7);
 
@@ -264,7 +267,7 @@ public class StorageGateway {
 
 					c.commit();
 
-					// 5. Replicar solo cuando realmente se creó un nuevo préstamo
+					// Replicar solo en caso de préstamo nuevo
 					replicator.replicateNewLoan(branchId, userId, bookCode);
 				} catch (Exception e) {
 					c.rollback();

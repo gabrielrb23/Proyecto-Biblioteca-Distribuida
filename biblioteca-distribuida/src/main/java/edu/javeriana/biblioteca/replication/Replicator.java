@@ -7,18 +7,22 @@ import java.time.LocalDate;
 import java.util.concurrent.*;
 
 public class Replicator {
-	private final DataSourceRouter router;
-	private final ExecutorService exec = Executors.newFixedThreadPool(2);
+
+	private final DataSourceRouter router; // Router para elegir primaria/secundaria
+	private final ExecutorService exec = Executors.newFixedThreadPool(2); // Hilos para replicación async
 
 	public Replicator(DataSourceRouter router) {
+		// Guarda referencia al router para saber dónde replicar
 		this.router = router;
 	}
 
 	public void replicateIncrementAvailable(String branchId, String bookCode) {
+		// Sólo replicar si la primaria está activa
 		if (!router.isPrimaryUp()) {
 			return;
 		}
 
+		// Ejecutar replicación en segundo plano
 		exec.submit(() -> {
 			try (Connection c = router.secondary().getConnection();
 					PreparedStatement ps = c.prepareStatement(
@@ -29,6 +33,7 @@ public class Replicator {
 				ps.setString(1, branchId);
 				ps.setString(2, bookCode);
 				ps.executeUpdate();
+
 			} catch (Exception e) {
 				System.err.println("[Replicator] Error replicando inventario: " + e.getMessage());
 			}
@@ -36,6 +41,7 @@ public class Replicator {
 	}
 
 	public void replicateRenewLoan(String branchId, String userId, String bookCode) {
+		// No replicar si ya estamos usando la secundaria para escritura
 		if (!router.isPrimaryUp()) {
 			return;
 		}
@@ -53,6 +59,7 @@ public class Replicator {
 				ps.setString(2, bookCode);
 				ps.setString(3, branchId);
 				ps.executeUpdate();
+
 			} catch (Exception e) {
 				System.err.println("[Replicator] Error replicando renovación: " + e.getMessage());
 			}
@@ -60,6 +67,7 @@ public class Replicator {
 	}
 
 	public void replicateNewLoan(String branchId, String userId, String bookCode) {
+		// Evita replicar si estamos en secundaria
 		if (!router.isPrimaryUp()) {
 			return;
 		}
@@ -76,10 +84,12 @@ public class Replicator {
 									"VALUES (?,?,?,?,?,0,'ACTIVE') " +
 									"ON CONFLICT (loan_id) DO NOTHING")) {
 
+				// Replicar ajuste de inventario
 				psInv.setString(1, branchId);
 				psInv.setString(2, bookCode);
 				psInv.executeUpdate();
 
+				// Replicar creación del préstamo
 				LocalDate startDate = LocalDate.now();
 				LocalDate dueDate = startDate.plusDays(7);
 
@@ -97,6 +107,7 @@ public class Replicator {
 	}
 
 	public void shutdown() {
+		// Apagar los hilos del replicador
 		exec.shutdown();
 	}
 }
